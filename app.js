@@ -18,8 +18,8 @@
      3. Cambia API_TOKEN por un valor largo y aleatorio, y usa EXACTAMENTE
         el mismo valor en CONFIG.API_TOKEN dentro de apps-script-backend/Code.gs.
    ========================================================================= */
-var API_BASE_URL = 'PEGA_AQUI_TU_URL_DE_DESPLIEGUE/exec';
-var API_TOKEN = 'CAMBIA_ESTE_TOKEN';
+var API_BASE_URL = 'https://script.google.com/macros/s/AKfycbwMHxuUNLfsM3eY_x5Ad9n8ZEqj3o71L-YD-v1HrDGGh13AYvU0QhNRfkK4kUBLy2RZ/exec';
+var API_TOKEN = '12345';
 
 // Lee los datos del dashboard (equivalente al antiguo google.script.run.getDashboardData()).
 function apiGetDashboardData(onSuccess, onFail){
