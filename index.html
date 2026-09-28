@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>💸 Finanzas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#09090b">
+  <meta name="color-scheme" content="dark">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Mis finanzas">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script>
+  // Nota: ahora que esta página se sirve directamente (GitHub Pages), ya NO
+  // vive dentro del iframe con el que Google Apps Script envolvía el
+  // dashboard — que era la causa real de que las franjas blancas de iOS 26
+  // "Liquid Glass" nunca se pudieran corregir del todo. Este script sigue
+  // sirviendo como red de seguridad general (por si algún navegador
+  // reordena/duplica las etiquetas <meta>), y las franjas ".ios-glass-edge"
+  // en el <body> ahora sí pueden llegar hasta el borde real de la pantalla.
+  function fixMetaTags(){
+    var viewports = document.querySelectorAll('head meta[name="viewport"]');
+    for (var i = 1; i < viewports.length; i++) viewports[i].parentNode.removeChild(viewports[i]);
+    var vp = document.querySelector('head meta[name="viewport"]');
+    if (!vp) { vp = document.createElement('meta'); vp.setAttribute('name','viewport'); document.head.insertBefore(vp, document.head.firstChild); }
+    vp.setAttribute('content', 'width=device-width, initial-scale=1.0, viewport-fit=cover');
+
+    var themes = document.querySelectorAll('head meta[name="theme-color"]');
+    for (var j = 1; j < themes.length; j++) themes[j].parentNode.removeChild(themes[j]);
+    var theme = document.querySelector('head meta[name="theme-color"]');
+    if (!theme) { theme = document.createElement('meta'); theme.setAttribute('name','theme-color'); document.head.insertBefore(theme, document.head.firstChild); }
+    theme.setAttribute('content', '#09090b');
+
+    var bars = document.querySelectorAll('head meta[name="apple-mobile-web-app-status-bar-style"]');
+    for (var k = 1; k < bars.length; k++) bars[k].parentNode.removeChild(bars[k]);
+    var bar = document.querySelector('head meta[name="apple-mobile-web-app-status-bar-style"]');
+    if (bar) bar.setAttribute('content', 'black-translucent');
+  }
+  fixMetaTags();
+  document.addEventListener('DOMContentLoaded', fixMetaTags);
+  window.addEventListener('load', fixMetaTags);
+  window.addEventListener('pageshow', fixMetaTags);
+  document.addEventListener('visibilitychange', function(){ if (!document.hidden) fixMetaTags(); });
+  </script>
+</head>
+<body>
+<!-- Ver nota en styles.css ("iOS 26+ Liquid Glass"): estas dos franjas invisibles
+     le dan a Safari un color sólido que leer para teñir su barra de direcciones y
+     su barra de pestañas del mismo color oscuro del dashboard, en vez de blanco.
+     Al ya NO estar dentro del iframe con el que Apps Script envolvía la página,
+     esta vez sí deberían llegar hasta el borde real de la pantalla. -->
+<div class="ios-glass-edge top" aria-hidden="true"></div>
+<div class="ios-glass-edge bottom" aria-hidden="true"></div>
+<div class="app-shell">
+
+  <!-- ============================= PANTALLA: INICIO ============================= -->
+  <div class="screen active" data-screen="inicio" id="screen-inicio">
+    <div class="wrap">
+      <div class="hero-glow">
+      <header class="top-compact anim">
+        <div class="brand-block">
+          <div class="brand"><span class="brand-mark">◆</span><span class="brand-name">Mis Finanzas</span></div>
+          <span class="brand-date" id="todayLabel"></span>
+        </div>
+        <button class="icon-btn-lg" id="syncBtn" title="Sincronizar"><span class="sync-icon">↻</span></button>
+      </header>
+
+      <section class="balance-card anim">
+        <div class="balance-head">
+          <span class="label">💸 Balance</span>
+          <button class="eye-toggle" id="eyeToggle" aria-label="Mostrar u ocultar balance">👁</button>
+        </div>
+        <div class="balance-dual" id="balanceDual">
+          <div class="balance-box ves"><span class="cur-tag ves">Bs</span><span class="balance-figure num" id="balanceFigureVes">0,00</span></div>
+          <div class="balance-box usd"><span class="cur-tag usd">$</span><span class="balance-figure num usd" id="balanceFigureUsd">0.00</span></div>
+        </div>
+        <div class="balance-bcv" id="balanceBcvLine" style="display:none"></div>
+      </section>
+      </div>
+
+      <section class="quick-actions anim">
+        <button class="qa-btn" data-goto="movimientos"><span class="qa-ico">💱</span><span class="qa-label">Movimientos</span></button>
+        <button class="qa-btn" data-goto="cuentas"><span class="qa-ico">🏦</span><span class="qa-label">Cuentas</span></button>
+      </section>
+
+      <section class="anim">
+        <div class="section-head-sm"><h2>🏦 Cuentas</h2><button class="link-btn" data-goto="cuentas">Ver todas ›</button></div>
+        <div class="accounts-row" id="accountsRow"></div>
+      </section>
+
+      <div class="section-head-sm anim">
+        <h2>📅 Resumen del Mes</h2>
+        <div class="seg sm" id="statsCurSeg"><button data-cur="VES" class="active">Bs</button><button data-cur="USD">$</button><button data-cur="USDBS">$ + Bs</button></div>
+      </div>
+      <section class="stat-strip anim" id="statStrip"></section>
+
+      <div class="section-head-sm anim">
+        <h2>🧮 Análisis</h2>
+        <div class="seg sm" id="chartCurSeg"><button data-cur="VES" class="active">Bs</button><button data-cur="USD">$</button><button data-cur="BCV">$ / BCV</button><button data-cur="USDBS">$ + Bs</button></div>
+      </div>
+
+      <section class="analytics-grid anim">
+        <div class="panel"><h3>Ingresos vs. gastos (últimos meses)</h3><div class="chart-box"><div id="trendChart" class="chart-svg-host"></div></div><div class="trend-legend" id="trendLegend"></div></div>
+        <div class="panel"><h3>Gastos por categoría</h3><div class="chart-box" id="catChartBox"><div id="catChart" class="chart-svg-host"></div></div><div class="legend-list" id="catLegend"></div></div>
+      </section>
+
+      <section class="anim">
+        <div class="section-head-sm"><h2>📊 Movimientos Recientes</h2><button class="link-btn" data-goto="movimientos">Ver todo ›</button></div>
+        <div class="recent-tx-list" id="recentTxList"></div>
+      </section>
+    </div>
+  </div>
+
+  <!-- ============================= PANTALLA: MOVIMIENTOS ============================= -->
+  <div class="screen" data-screen="movimientos" id="screen-movimientos">
+    <div class="wrap">
+      <header class="screen-header anim"><h1>📈 Movimientos</h1></header>
+      <div class="search-row anim"><div class="search-bar"><span class="ico">🔍</span><input type="search" id="txSearch" placeholder="Buscar movimiento..." autocomplete="off"></div></div>
+      <section class="anim">
+        <div class="section-head"><div class="controls"><button class="btn add" id="addBtn">+ Agregar movimiento</button></div></div>
+        <div class="month-tabs" id="monthTabs"></div>
+      </section>
+      <div class="table-wrap">
+        <table><thead><tr><th>Fecha</th><th>Descripción</th><th>Cuenta</th><th>Categoría</th><th style="text-align:right">Monto</th><th></th></tr></thead><tbody id="txBody"></tbody></table>
+        <div class="table-empty" id="txEmpty" style="display:none"><div class="t">Aún no hay movimientos este mes</div><div>Registra tu primer ingreso o gasto para empezar a ver tus gráficas.</div></div>
+        <div class="table-pager" id="txPager"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================= PANTALLA: CUENTAS ============================= -->
+  <div class="screen" data-screen="cuentas" id="screen-cuentas">
+    <div class="wrap">
+      <header class="screen-header anim"><h1>💰 Cuentas</h1></header>
+      <section class="accounts-donut-card anim">
+        <div class="chart-svg-host" id="accountsDonut"></div>
+        <div class="accounts-donut-total"><span class="label">Balance total</span><div class="value num" id="accountsTotalUsd">$0.00</div><div class="value-eq num" id="accountsTotalEq"></div></div>
+      </section>
+      <div class="seg full-w anim" id="accountsCurFilter">
+        <button data-cur="ALL" class="active">Todas</button>
+        <button data-cur="VES">Bolívares</button>
+        <button data-cur="USD">Dólares</button>
+      </div>
+      <div class="accounts-list-head anim"><span id="accountsCount">0 cuentas</span></div>
+      <div class="accounts-full-list anim" id="accountsFullList"></div>
+    </div>
+  </div>
+
+  <!-- ============================= PANTALLA: CALCULADORA ============================= -->
+  <div class="screen" data-screen="calculadora" id="screen-calculadora">
+    <div class="wrap">
+      <header class="screen-header anim"><h1>🧮 Calculadora</h1></header>
+
+      <div class="calc-center">
+      <section class="calc-card anim">
+        <div class="calc-rate-select" id="calcRateSeg">
+          <button type="button" data-rate="usd" class="active">
+            <span class="calc-rate-ico">🇺🇸</span>
+            <span class="calc-rate-label">Dólar BCV</span>
+            <span class="calc-rate-value" id="calcRateUsdValue">—</span>
+          </button>
+          <button type="button" data-rate="eur">
+            <span class="calc-rate-ico">🇪🇺</span>
+            <span class="calc-rate-label">Euro BCV</span>
+            <span class="calc-rate-value" id="calcRateEurValue">—</span>
+          </button>
+          <button type="button" data-rate="usdt">
+            <span class="calc-rate-ico">₮</span>
+            <span class="calc-rate-label">USDT Binance</span>
+            <span class="calc-rate-value" id="calcRateUsdtValue">—</span>
+          </button>
+        </div>
+
+        <div class="calc-input-row">
+          <label for="calcAmount" class="calc-input-label" id="calcAmountLabel">Monto en dólares</label>
+          <div class="calc-input-wrap">
+            <span class="calc-input-prefix" id="calcAmountPrefix">$</span>
+            <input type="number" id="calcAmount" class="calc-input" min="0" step="0.01" inputmode="decimal" placeholder="0.00" autocomplete="off">
+          </div>
+        </div>
+
+        <button type="button" class="calc-swap-btn" id="calcSwapBtn" aria-label="Invertir cálculo" title="Invertir cálculo">
+          <span class="calc-swap-ico">⇅</span>
+        </button>
+
+        <div class="calc-result-row">
+          <span class="calc-result-label" id="calcResultLabel">Equivale a</span>
+          <div class="calc-result-value num" id="calcResultValue">Bs 0,00</div>
+          <div class="calc-result-sub" id="calcResultSub"></div>
+        </div>
+
+        <div class="calc-rates-note">
+          <div class="calc-rates-note-row"><span class="cur-tag">BCV</span><span class="txt" id="calcMetaBcv">—</span></div>
+          <div class="calc-rates-note-row"><span class="cur-tag usdt">USDT</span><span class="txt" id="calcMetaUsdt">—</span></div>
+        </div>
+      </section>
+      </div>
+    </div>
+  </div>
+
+  <button class="fab" id="fabAdd" aria-label="Agregar movimiento">+</button>
+
+  <nav class="tabbar">
+    <button class="tab-btn active" data-tab="inicio"><span class="tab-ico">🏠</span><span>Inicio</span></button>
+    <button class="tab-btn" data-tab="movimientos"><span class="tab-ico">💱</span><span>Movimientos</span></button>
+    <button class="tab-btn" data-tab="cuentas"><span class="tab-ico">🏦</span><span>Cuentas</span></button>
+    <button class="tab-btn" data-tab="calculadora"><span class="tab-ico">🧮</span><span>Calculadora</span></button>
+  </nav>
+</div>
+
+<!-- Hoja: agregar/editar movimiento (existente) -->
+<div class="backdrop" id="backdrop"><div class="modal"><h3 id="modalTitle">Agregar movimiento</h3><form id="txForm"><div class="type-toggle" id="typeToggle"><button type="button" data-type="expense" class="expense">Gasto</button><button type="button" data-type="income" class="income">Ingreso</button></div><div class="field"><label for="f-account">Cuenta</label><select id="f-account" required></select></div><div class="field-row"><div class="field"><label for="f-amount">Monto</label><input type="number" id="f-amount" min="0.01" step="0.01" placeholder="0.00" required></div><div class="field"><label for="f-date">Fecha</label><input type="date" id="f-date" required></div></div><div class="field"><label for="f-category">Categoría</label><input type="text" id="f-category" list="categoryList" placeholder="Selecciona o escribe una categoría" required><datalist id="categoryList"></datalist></div><div class="field"><label for="f-desc">Descripción (opcional)</label><input type="text" id="f-desc" placeholder="Ej. Mercado del mes, pago de nómina..."></div><div class="modal-actions"><button type="button" class="btn ghost" id="cancelBtn">Cancelar</button><button type="submit" class="btn" id="saveBtn">Guardar</button></div></form></div></div>
+
+<!-- Hoja genérica de detalle: ingresos del mes / egresos del mes / movimientos de una cuenta -->
+<div class="backdrop" id="detailBackdrop"><div class="modal detail-sheet">
+  <div class="detail-head"><h3 id="detailTitle">Ingresos</h3><button class="icon-btn" id="detailCloseBtn" aria-label="Cerrar">✕</button></div>
+  <div class="month-tabs detail-month-tabs" id="detailMonthTabs"></div>
+  <div class="detail-list" id="detailList"></div>
+  <div class="table-empty" id="detailEmpty" style="display:none"><div class="t" id="detailEmptyTitle"></div><div id="detailEmptyDesc"></div></div>
+</div></div>
+
+<div class="toast" id="toast"><span class="dot"></span><span id="toastMsg"></span></div>
+<div class="chart-tooltip" id="chartTooltip"></div>
+<script src="app.js"></script>
+</body></html>
