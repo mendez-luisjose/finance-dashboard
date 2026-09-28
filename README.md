@@ -99,6 +99,50 @@ franjas blancas después de este cambio, sería la primera señal real de que
 es un límite de la plataforma (no de este código) y no de la arquitectura
 Apps Script — avísame con la versión exacta de iOS para investigar más.
 
+## Novedades: "$ + Bs" y la Calculadora
+
+**"$ + Bs" en Resumen del Mes y Análisis.** El selector de moneda ya no
+tiene solo "Bs" y "$": ahora "$" muestra SOLO lo que de verdad se movió en
+dólares (sin convertir nada), y se agregó un tercer/cuarto botón **"$ + Bs"**
+que suma todos los movimientos (en cualquier moneda) convertidos a $ —
+de los $ gastados más los Bs, convertidos los Bs a $ con la tasa BCV. Antes
+"$" ya hacía esta suma combinada por dentro (solo que sin nombrarlo así),
+lo que hacía imposible ver el dato "solo lo que se movió en dólares" por
+separado; ahora las tres/cuatro vistas son cada una una cosa distinta y
+ninguna se pisa con otra:
+
+- **Bs**: solo los movimientos en bolívares, en Bs.
+- **$**: solo los movimientos en dólares, en $.
+- **$ / BCV** (solo en Análisis): solo los movimientos en bolívares, pero
+  convertidos a $ a la tasa BCV — para ver "a cuánto equivaldría en $ lo
+  que se manejó en bolívares".
+- **$ + Bs**: TODOS los movimientos, convertidos a $ y sumados — el total
+  combinado.
+
+**Pestaña Calculadora.** Nueva cuarta pestaña (junto a Inicio/Movimientos/
+Cuentas) para saber cuántos bolívares equivale un monto, eligiendo entre
+tres tasas: dólar BCV, euro BCV o el precio de compra de USDT en Binance
+P2P. Tiene un botón ⇅ para invertir el cálculo (de Bs hacia la moneda
+elegida). Esto requiere que `apps-script-backend/Code.gs` esté actualizado
+(ver más abajo) — si solo actualizas el sitio estático sin redesplegar el
+backend, la Calculadora se ve bien pero las tres tasas se quedan en "—"
+porque `getDashboardData()` todavía no le manda `bcvEur` ni `binanceUsdt`.
+
+Redespliega el backend igual que siempre: pega el nuevo `Code.gs` (o
+`npx clasp push`) y luego **Implementar → Administrar implementaciones →
+✎ → Nueva versión → Implementar** (edita la implementación existente, no
+crees una nueva, para que la URL `/exec` no cambie).
+
+Detalle sobre la tasa de USDT: se obtiene consultando el mismo endpoint
+público que usa la página de anuncios P2P de Binance (no es una API oficial
+ni documentada), tomando la mediana de los primeros anuncios de venta de
+USDT en VES para no depender de un único anuncio atípico. Si Binance cambia
+ese endpoint en el futuro, esta tasa puede dejar de obtenerse — el resto del
+dashboard (incluidas las otras dos tasas) sigue funcionando igual, y la
+Calculadora simplemente muestra "—" para USDT hasta que se arregle. Puedes
+diagnosticar cada tasa por separado ejecutando manualmente, desde el editor
+de Apps Script, las funciones `debugBcv`, `debugBcvEur` y `debugBinanceUsdt`.
+
 ## Cosas que NO cambiaron
 
 - El Google Sheet: mismo `SPREADSHEET_ID`, mismas hojas `Cuentas` y
