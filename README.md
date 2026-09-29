@@ -121,27 +121,26 @@ ninguna se pisa con otra:
 
 **Pestaña Calculadora.** Nueva cuarta pestaña (junto a Inicio/Movimientos/
 Cuentas) para saber cuántos bolívares equivale un monto, eligiendo entre
-tres tasas: dólar BCV, euro BCV o el precio de compra de USDT en Binance
-P2P. Tiene un botón ⇅ para invertir el cálculo (de Bs hacia la moneda
-elegida). Esto requiere que `apps-script-backend/Code.gs` esté actualizado
-(ver más abajo) — si solo actualizas el sitio estático sin redesplegar el
-backend, la Calculadora se ve bien pero las tres tasas se quedan en "—"
-porque `getDashboardData()` todavía no le manda `bcvEur` ni `binanceUsdt`.
+dos tasas: dólar BCV o euro BCV. Tiene un botón ⇅ para invertir el cálculo
+(de Bs hacia la moneda elegida) y un botón 📋 junto al resultado para
+copiarlo al portapapeles del dispositivo con un solo toque (muestra un ✓
+como confirmación visual). Esto requiere que `apps-script-backend/Code.gs`
+esté actualizado (ver más abajo) — si solo actualizas el sitio estático sin
+redesplegar el backend, la Calculadora se ve bien pero las tasas se quedan
+en "—" porque `getDashboardData()` todavía no le manda `bcvEur`.
 
 Redespliega el backend igual que siempre: pega el nuevo `Code.gs` (o
 `npx clasp push`) y luego **Implementar → Administrar implementaciones →
 ✎ → Nueva versión → Implementar** (edita la implementación existente, no
 crees una nueva, para que la URL `/exec` no cambie).
 
-Detalle sobre la tasa de USDT: se obtiene consultando el mismo endpoint
-público que usa la página de anuncios P2P de Binance (no es una API oficial
-ni documentada), tomando la mediana de los primeros anuncios de venta de
-USDT en VES para no depender de un único anuncio atípico. Si Binance cambia
-ese endpoint en el futuro, esta tasa puede dejar de obtenerse — el resto del
-dashboard (incluidas las otras dos tasas) sigue funcionando igual, y la
-Calculadora simplemente muestra "—" para USDT hasta que se arregle. Puedes
-diagnosticar cada tasa por separado ejecutando manualmente, desde el editor
-de Apps Script, las funciones `debugBcv`, `debugBcvEur` y `debugBinanceUsdt`.
+Nota sobre USDT: la Calculadora ya no muestra la tasa de USDT de Binance
+P2P (se quitó de la interfaz para simplificarla — solo quedan dólar BCV y
+euro BCV). El backend sigue calculando `binanceUsdt` en `getDashboardData()`
+por si se vuelve a necesitar más adelante, pero el frontend ya no la
+consume en ningún lado. Si en algún momento quieres quitarla también del
+backend, o quieres el detalle de cómo se calculaba (endpoint de anuncios
+P2P, mediana de precios, función `debugBinanceUsdt`), avísame.
 
 ## Cosas que NO cambiaron
 
