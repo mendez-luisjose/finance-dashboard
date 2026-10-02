@@ -119,8 +119,7 @@ ninguna se pisa con otra:
 - **$ + Bs**: TODOS los movimientos, convertidos a $ y sumados — el total
   combinado.
 
-**Pestaña Calculadora.** Nueva cuarta pestaña (junto a Inicio/Movimientos/
-Cuentas) para saber cuántos bolívares equivale un monto, eligiendo entre
+**Pestaña Calculadora.** Pestaña aparte para saber cuántos bolívares equivale un monto, eligiendo entre
 dos tasas: dólar BCV o euro BCV. Tiene un botón ⇅ para invertir el cálculo
 (de Bs hacia la moneda elegida) y un botón 📋 junto al resultado para
 copiarlo al portapapeles del dispositivo con un solo toque (muestra un ✓
@@ -141,6 +140,38 @@ por si se vuelve a necesitar más adelante, pero el frontend ya no la
 consume en ningún lado. Si en algún momento quieres quitarla también del
 backend, o quieres el detalle de cómo se calculaba (endpoint de anuncios
 P2P, mediana de precios, función `debugBinanceUsdt`), avísame.
+
+## Novedades: "Total en $" en el balance, pestaña Análisis y coma decimal
+
+**"Total en $" primero en el balance.** La tarjeta de Balance (en Inicio)
+ahora muestra PRIMERO, grande y arriba de todo, cuánto hay en total en $
+sumando TODAS las cuentas — las que ya son $ tal cual, más las que son Bs
+convertidas a $ a la tasa BCV del día. Antes solo se veían, lado a lado, el
+total en Bs y el total en $ cada uno por separado (sin sumarse entre sí);
+ese desglose se mantiene, ahora como detalle secundario debajo del total
+combinado. El botón del ojo (👁) oculta/muestra los tres números juntos. Si
+hay saldo en Bs pero todavía no se sincronizó la tasa BCV (primera carga,
+sin conexión), el total combinado muestra "—" en vez de un número
+incompleto.
+
+**Pestaña Análisis (antes era parte de Inicio).** Las gráficas "Ingresos
+vs. gastos" y "Gastos por categoría" (con su selector de moneda Bs / $ /
+$ BCV / $ + Bs) ya no viven dentro de Inicio — ahora son su propia pestaña,
+"📊 Análisis", entre Cuentas y Calculadora. Además, "Gastos por categoría"
+ahora tiene su propio selector de mes (las mismas pastillas que ya se usan
+en Movimientos), con una pastilla extra al principio, **"Todos los
+meses"**, que suma las categorías de TODA la historia en vez de un solo
+mes — para comparar un mes puntual contra el acumulado total. "Resumen del
+Mes" (los tres números chicos de Ingresos/Gastos/Balance del mes, con su
+propio selector Bs/$/$+Bs) se queda igual, dentro de Inicio.
+
+**Coma decimal en la Calculadora (bug de iPhone).** El campo de monto de la
+Calculadora era `<input type="number">`, y ese tipo de campo HTML solo
+acepta el punto como separador decimal pase lo que pase en el idioma del
+teléfono — en iOS ni siquiera dejaba teclear una coma ahí. Ahora es
+`type="text"` con teclado numérico (`inputmode="decimal"`), y acepta tanto
+"," como "." como separador decimal (convirtiéndolos internamente), que es
+como se escriben los montos normalmente en Venezuela.
 
 ## Cosas que NO cambiaron
 
